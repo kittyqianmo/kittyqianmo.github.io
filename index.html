@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#12152a">
+<title>♪</title>
+<style>
+  :root {
+    --ink: #12152a;
+    --ink-deep: #090b18;
+    --moon: #dcdff0;
+    --mist: #8189ad;
+    --dusk: #8b7bd0;
+    --rose: #d69aa9;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body { margin: 0; }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+             env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    background: radial-gradient(120% 90% at 50% 38%, #1c2040 0%, var(--ink) 48%, var(--ink-deep) 100%);
+    color: var(--moon);
+    font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "STSong",
+                 Georgia, "Times New Roman", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  main {
+    width: min(340px, 84vw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.25rem;
+    text-align: center;
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+  }
+  .title[hidden] { display: none; }
+
+ 
+  .play {
+    position: relative;
+    isolation: isolate;
+    width: clamp(96px, 30vw, 128px);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--ink);
+    background: radial-gradient(circle at 34% 28%, #f6e9ef 0%, var(--rose) 42%, var(--dusk) 100%);
+    box-shadow: 0 0 36px 6px rgba(139, 123, 208, 0.32);
+    transition: transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .play::before {
+    content: "";
+    position: absolute;
+    inset: -34px;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139, 123, 208, 0.34) 0%, rgba(214, 154, 169, 0.12) 45%, transparent 70%);
+    opacity: 0.55;
+  }
+  .play:hover { transform: scale(1.03); }
+  .play:active { transform: scale(0.98); }
+  .play:focus-visible { outline: 2px solid var(--moon); outline-offset: 6px; }
+
+  .play svg { width: 34%; height: 34%; fill: currentColor; }
+  .play .i-pause { display: none; }
+  .is-playing .play .i-play { display: none; }
+  .is-playing .play .i-pause { display: block; }
+
+  .is-playing .play::before { animation: breathe 5.5s ease-in-out infinite; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1);    opacity: 0.5; }
+    50%      { transform: scale(1.22); opacity: 0.95; }
+  }
+
+  .bar {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .seek {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 20px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    --p: 0%;
+  }
+  .seek:disabled { cursor: default; opacity: 0.5; }
+  .seek::-webkit-slider-runnable-track {
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(to right, var(--moon) var(--p), rgba(129, 137, 173, 0.35) var(--p));
+  }
+  .seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    margin-top: -4px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--moon);
+  }
+  .seek::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(129, 137, 173, 0.35); }
+  .seek::-moz-range-progress { height: 2px; border-radius: 1px; background: var(--moon); }
+  .seek::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--moon); }
+  .seek:focus-visible { outline: 2px solid var(--moon); outline-offset: 4px; border-radius: 4px; }
+
+  .time {
+    margin: 0;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    color: var(--mist);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--rose);
+  }
+  .note:empty { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .play { transition: none; }
+    .is-playing .play::before { animation: none; opacity: 0.8; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <h1 class="title" id="title" hidden></h1>
+
+    <button class="play" id="play" type="button" aria-label="播放">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="i-play" d="M8 5.5v13l11-6.5z"/>
+        <path class="i-pause" d="M6.5 5h4v14h-4zM13.5 5h4v14h-4z"/>
+      </svg>
+    </button>
+
+    <div class="bar">
+      <input class="seek" id="seek" type="range" min="0" max="1000" step="5" value="0"
+             aria-label="播放进度" disabled>
+      <p class="time" id="time">0:00 / 0:00</p>
+    </div>
+
+    <p class="note" id="note" role="status"></p>
+  </main>
+
+  <audio id="audio" preload="metadata"></audio>
+
+<script>
+  —
+  const CONFIG = {
+    src: "a.mp3", 
+    title: "Still Becoming",       
+    loop: true       
+  };
+
+
+  const audio   = document.getElementById("audio");
+  const playBtn = document.getElementById("play");
+  const seek    = document.getElementById("seek");
+  const timeEl  = document.getElementById("time");
+  const noteEl  = document.getElementById("note");
+  const titleEl = document.getElementById("title");
+
+  if (CONFIG.title) {
+    titleEl.textContent = CONFIG.title;
+    titleEl.hidden = false;
+    document.title = CONFIG.title;
+  }
+  audio.loop = CONFIG.loop;
+  audio.src = CONFIG.src;
+
+  const fmt = (t) => {
+    if (!Number.isFinite(t) || t < 0) return "0:00";
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60).toString().padStart(2, "0");
+    return m + ":" + s;
+  };
+
+  let scrubbing = false;
+
+  function render() {
+    const d = audio.duration;
+    const ready = Number.isFinite(d) && d > 0;
+    if (!scrubbing) seek.value = Math.round((ready ? audio.currentTime / d : 0) * 1000);
+    seek.style.setProperty("--p", seek.value / 10 + "%");
+    timeEl.textContent = fmt(audio.currentTime) + " / " + fmt(ready ? d : 0);
+  }
+
+  function setPlaying(on) {
+    document.body.classList.toggle("is-playing", on);
+    playBtn.setAttribute("aria-label", on ? "暂停" : "播放");
+  }
+
+  function showLoadError() {
+    noteEl.textContent =
+      "无法加载"
+  }
+
+  playBtn.addEventListener("click", async () => {
+    try {
+      if (audio.paused) await audio.play();
+      else audio.pause();
+    } catch (err) {
+      if (err && err.name === "NotAllowedError") {
+        noteEl.textContent = "浏览器阻止了播放，请再点一次。";
+      } else {
+        showLoadError();
+      }
+    }
+  });
+
+  seek.addEventListener("pointerdown", () => { scrubbing = true; });
+  window.addEventListener("pointerup", () => { scrubbing = false; });
+  window.addEventListener("pointercancel", () => { scrubbing = false; });
+  seek.addEventListener("input", () => {
+    const d = audio.duration;
+    if (Number.isFinite(d) && d > 0) audio.currentTime = (seek.value / 1000) * d;
+    render();
+  });
+
+  audio.addEventListener("loadedmetadata", () => { seek.disabled = false; render(); });
+  audio.addEventListener("timeupdate", render);
+  audio.addEventListener("play", () => setPlaying(true));
+  audio.addEventListener("pause", () => setPlaying(false));
+  audio.addEventListener("playing", () => { noteEl.textContent = ""; });
+  audio.addEventListener("ended", () => {
+    setPlaying(false);
+    audio.currentTime = 0;
+    render();
+  });
+  audio.addEventListener("error", showLoadError);
+
+  render();
+</script>
+</body>
+</html>
